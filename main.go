@@ -8,12 +8,14 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/andrdru/go-template/cmd/app"
+	"github.com/andrdru/go-template/cmd/script_example"
 )
 
 type (
 	flags struct {
-		script *string
-		isHelp *bool
+		isHelp     *bool
+		configPath *string
+		script     *string
 	}
 )
 
@@ -23,7 +25,7 @@ const (
 	// go build -ldflags="-X 'main.serviceName=my_service'"
 	serviceName = "service"
 
-	scriptTest = "script-test"
+	scriptExample = "example"
 )
 
 func main() {
@@ -41,13 +43,13 @@ func main() {
 
 	switch *f.script {
 	case "":
-		code = app.Run(logger)
+		code = app.Run(logger, *f.configPath)
 	default:
 		logger.Error().Msgf("unknown script: %s", *f.script)
 		os.Exit(1)
 
-	case scriptTest:
-		//code = somescript.Run(logger)
+	case scriptExample:
+		code = script_example.Run(logger)
 	}
 
 	os.Exit(code)
@@ -55,6 +57,7 @@ func main() {
 
 func initFlags() (fv flags) {
 	fv.isHelp = flag.Bool("help", false, "Print help and exit")
+	fv.configPath = flag.String("config", "config.yaml", "path to config.yml")
 	fv.script = flag.String("script", "", "Run in script mode. One of: test-script")
 
 	flag.Parse()

@@ -1,0 +1,12 @@
+is_debug: $IS_DEBUG
+
+http:
+  host: $HTTP_HOST
+  port: $HTTP_PORT
+
+postgres:
+  host: $POSTGRES_HOST
+  port: $POSTGRES_PORT
+  user: $POSTGRES_USER
+  pass: $POSTGRES_PASS
+  dbname: $POSTGRES_DB

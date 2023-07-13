@@ -1,0 +1,76 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15.2-alpine
+    container_name: ${PROJECT_PREFIX}-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "dbname"
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "pass"
+      DB_EXPOSED_PORT: "5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./db_data_postgres:/var/lib/postgresql/data
+    networks:
+      - code-network
+
+  db_migrate:
+    image: "${PROJECT_PREFIX}_build_docker"
+    container_name: ${PROJECT_PREFIX}-migrate
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - "../.:/app"
+    working_dir: "/app"
+    entrypoint: sql-migrate up -config=docker/resources/dbconfig.yml -env=docker
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - code-network
+
+  prometheus:
+    image: prom/prometheus:v2.32.0
+    container_name: ${PROJECT_PREFIX}-prometheus
+    user: root
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./resources/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./db_data_prometheus:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - code-network
+
+  grafana:
+    image: grafana/grafana:8.1.2
+    container_name: ${PROJECT_PREFIX}-grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./resources/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./resources/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: 1
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+    depends_on:
+      - prometheus
+    networks:
+      - code-network
+
+networks:
+  code-network:
+    driver: bridge

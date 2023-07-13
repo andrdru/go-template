@@ -1,0 +1,10 @@
+# db config for sql-migrate cli
+# see https://github.com/rubenv/sql-migrate
+docker:
+  dialect: postgres
+  datasource: host=db port=5432 user=user password=pass dbname=dbname application_name=migrator sslmode=disable
+  dir: migrations
+local:
+  dialect: postgres
+  datasource: host=localhost port=5432 user=user password=pass dbname=dbname application_name=migrator sslmode=disable
+  dir: migrations
