@@ -3,10 +3,10 @@ package middlewares
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/rs/zerolog"
 )
 
 type auth interface {
@@ -18,7 +18,6 @@ var (
 )
 
 var SessionValidate = func(
-	logger zerolog.Logger,
 	auth auth,
 	needAuthFunc func(w http.ResponseWriter, message string) error,
 ) HTTPMiddleware {
@@ -27,12 +26,12 @@ var SessionValidate = func(
 			ctx, err := auth.Check(r)
 			if err != nil {
 				if !errors.Is(err, ErrNotAllowed) {
-					logger.Error().Err(err).Msgf("session validate")
+					slog.Default().Error("session validate", slog.Any("error", err))
 				}
 
 				err = needAuthFunc(w, "")
 				if err != nil {
-					logger.Error().Err(err).Msgf("write need auth")
+					slog.Default().Error("write need auth", slog.Any("error", err))
 				}
 
 				return

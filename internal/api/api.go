@@ -2,20 +2,19 @@ package api
 
 import (
 	"context"
+	"log/slog"
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/julienschmidt/httprouter"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/zerolog"
-
 	"github.com/andrdru/go-template/internal/entities"
 	"github.com/andrdru/go-template/internal/middlewares"
+	"github.com/julienschmidt/httprouter"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type (
 	API struct {
-		logger zerolog.Logger
+		logger *slog.Logger
 
 		authManager authManager
 	}
@@ -31,7 +30,7 @@ var (
 	OptUnauthorized  = Error("unauthorized")
 )
 
-func NewAPI(logger zerolog.Logger, sessionManager authManager) *API {
+func NewAPI(logger *slog.Logger, sessionManager authManager) *API {
 	return &API{
 		logger:      logger,
 		authManager: sessionManager,
@@ -42,7 +41,7 @@ func (a *API) InitRoutes() *httprouter.Router {
 	router := initHTTP()
 
 	auth := []middlewares.HTTPMiddleware{
-		middlewares.SessionValidate(a.logger, a.authManager, handleUnauthorized),
+		middlewares.SessionValidate(a.authManager, handleUnauthorized),
 	}
 
 	// anonymous methods

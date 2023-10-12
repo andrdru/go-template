@@ -2,13 +2,15 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/andrdru/go-template/internal/pkg/graceful"
 
 	"github.com/andrdru/go-template/configs"
 	"github.com/andrdru/go-template/internal/api"
@@ -17,32 +19,29 @@ import (
 )
 
 type (
-	//closer resource graceful shutdown handler
-	closer func(ctx context.Context) (description string, err error)
-
 	bootstrap struct {
 		httpListenAndServe func()
 
-		closers []closer
+		closers []graceful.Closer
 	}
 )
 
-func Run(logger zerolog.Logger, configPath string) (code int) {
+func Run(logger *slog.Logger, configPath string) (code int) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	logger.Info().Msg("app staring")
-	defer logger.Info().Msg("app finished")
+	logger.Info("app staring")
+	defer logger.Info("app finished")
 
 	conf, err := configs.NewConfig(configPath)
 	if err != nil {
-		logger.Error().Err(err).Msg("init config")
+		logger.Error("init config", slog.Any("error", err))
 		return 1
 	}
 
 	boot, err := initApp(logger, conf)
 	if err != nil {
-		logger.Error().Err(err).Msg("init app")
+		logger.Error("init app", slog.Any("error", err))
 		return 1
 	}
 
@@ -52,18 +51,18 @@ func Run(logger zerolog.Logger, configPath string) (code int) {
 			cancelCloser()
 		}()
 
-		boot.shutdown(ctxCloser, logger)
+		graceful.Stop(ctxCloser, logger, boot.closers)
 	}()
 
 	go boot.httpListenAndServe()
 
-	logger.Info().Msg("app started successfully")
+	logger.Info("app started successfully")
 	<-ctx.Done()
 
 	return 0
 }
 
-func initApp(logger zerolog.Logger, conf configs.Config) (boot bootstrap, err error) {
+func initApp(logger *slog.Logger, conf configs.Config) (boot bootstrap, err error) {
 	boot = bootstrap{}
 
 	db, err := conf.Postgres.Connect()
@@ -83,8 +82,8 @@ func initApp(logger zerolog.Logger, conf configs.Config) (boot bootstrap, err er
 	}
 
 	boot.httpListenAndServe = func() {
-		if err = srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Error().Err(err).Msg("serve http")
+		if err = srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Error("serve http", slog.Any("error", err))
 		}
 	}
 
@@ -94,17 +93,4 @@ func initApp(logger zerolog.Logger, conf configs.Config) (boot bootstrap, err er
 	})
 
 	return boot, nil
-}
-
-// shutdown close app resources
-func (b *bootstrap) shutdown(ctx context.Context, logger zerolog.Logger) {
-	for _, f := range b.closers {
-		description, errClose := f(ctx)
-		if errClose != nil {
-			logger.Err(errClose).Msgf("close: %s", description)
-			continue
-		}
-
-		logger.Info().Msgf("closed: %s", description)
-	}
 }

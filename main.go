@@ -2,10 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
+	"log/slog"
 	"os"
-	"time"
-
-	"github.com/rs/zerolog"
 
 	"github.com/andrdru/go-template/cmd/app"
 	"github.com/andrdru/go-template/cmd/script_example"
@@ -35,7 +34,9 @@ func main() {
 		os.Exit(0)
 	}
 
-	logger := initLogger()
+	initLogger()
+
+	logger := slog.Default()
 
 	var (
 		code int
@@ -45,7 +46,7 @@ func main() {
 	case "":
 		code = app.Run(logger, *f.configPath)
 	default:
-		logger.Error().Msgf("unknown script: %s", *f.script)
+		logger.Error(fmt.Sprintf("unknown script: %s", *f.script))
 		os.Exit(1)
 
 	case scriptExample:
@@ -64,11 +65,11 @@ func initFlags() (fv flags) {
 	return fv
 }
 
-func initLogger() zerolog.Logger {
-	zerolog.TimeFieldFormat = time.RFC3339Nano
+func initLogger() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil)).With(
+		"service",
+		serviceName,
+	)
 
-	return zerolog.New(os.Stdout).
-		With().Timestamp().
-		Str("service", serviceName).
-		Logger()
+	slog.SetDefault(logger)
 }

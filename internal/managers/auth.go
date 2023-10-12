@@ -9,10 +9,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/andrdru/go-template/internal/ctxsess"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/andrdru/go-template/internal/ctxsess"
 	"github.com/andrdru/go-template/internal/entities"
 	"github.com/andrdru/go-template/internal/middlewares"
 	"github.com/andrdru/go-template/internal/repos"

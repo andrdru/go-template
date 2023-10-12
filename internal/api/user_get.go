@@ -3,9 +3,8 @@ package api
 import (
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
-
 	"github.com/andrdru/go-template/internal/ctxsess"
+	"github.com/julienschmidt/httprouter"
 )
 
 type (

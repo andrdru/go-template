@@ -1,11 +1,11 @@
 package script_example
 
 import (
-	"github.com/rs/zerolog"
+	"log/slog"
 )
 
-func Run(logger zerolog.Logger) (code int) {
-	logger.Info().Msgf("hello, I'm script example")
+func Run(logger *slog.Logger) (code int) {
+	logger.Info("hello, I'm script example")
 
 	return 0
 }

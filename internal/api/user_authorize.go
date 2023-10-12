@@ -2,11 +2,11 @@ package api
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
-
 	"github.com/andrdru/go-template/internal/entities"
+	"github.com/julienschmidt/httprouter"
 )
 
 //go:generate easyjson
@@ -60,7 +60,7 @@ func (a *API) UserAuthorize(w http.ResponseWriter, r *http.Request, p httprouter
 			return
 		}
 
-		a.logger.Err(err).Msgf("login")
+		a.logger.Error("login", slog.Any("error", err))
 
 		message.SetError(OptInternalError)
 		_ = message.Return(w)
