@@ -9,7 +9,7 @@ import (
 
 	"github.com/andrdru/go-template/internal/entities"
 	"github.com/andrdru/go-template/internal/metrics"
-	"github.com/andrdru/go-template/internal/pkg/tx"
+	"github.com/andrdru/go-template/tx"
 )
 
 type User struct {

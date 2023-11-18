@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/andrdru/gosvc/configs"
+	"github.com/andrdru/go-template/configs"
 	"gopkg.in/yaml.v3"
 )
 

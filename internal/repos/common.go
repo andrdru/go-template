@@ -3,7 +3,7 @@ package repos
 import (
 	"context"
 
-	"github.com/andrdru/go-template/internal/pkg/tx"
+	"github.com/andrdru/go-template/tx"
 )
 
 type (

@@ -10,10 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/andrdru/go-template/internal/pkg/graceful"
-
-	"github.com/andrdru/go-template/configs"
+	"github.com/andrdru/go-template/graceful"
 	"github.com/andrdru/go-template/internal/api"
+	"github.com/andrdru/go-template/internal/configs"
 	"github.com/andrdru/go-template/internal/managers"
 	"github.com/andrdru/go-template/internal/repos"
 )
